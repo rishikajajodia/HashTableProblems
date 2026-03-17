@@ -1,34 +1,30 @@
-// Problem 6: Distributed Rate Limiter
+// Problem 5: Real-Time Analytics Dashboard
 import java.util.*;
 
-class TokenBucket {
-    int tokens;
-    int max;
-    long lastRefill;
+class Analytics {
+    HashMap<String, Integer> pageViews = new HashMap<>();
+    HashMap<String, Set<String>> uniqueVisitors = new HashMap<>();
+    HashMap<String, Integer> sourceCount = new HashMap<>();
 
-    TokenBucket(int max) {
-        this.max = max;
-        this.tokens = max;
-        this.lastRefill = System.currentTimeMillis();
+    public void processEvent(String url, String userId, String source) {
+        pageViews.put(url, pageViews.getOrDefault(url, 0) + 1);
+
+        uniqueVisitors.computeIfAbsent(url, k -> new HashSet<>()).add(userId);
+
+        sourceCount.put(source, sourceCount.getOrDefault(source, 0) + 1);
     }
-}
 
-class RateLimiter {
-    HashMap<String, TokenBucket> clients = new HashMap<>();
-
-    public boolean check(String clientId) {
-        clients.putIfAbsent(clientId, new TokenBucket(1000));
-        TokenBucket bucket = clients.get(clientId);
-
-        if (bucket.tokens > 0) {
-            bucket.tokens--;
-            return true;
+    public void dashboard() {
+        System.out.println("Top Pages:");
+        for (String p : pageViews.keySet()) {
+            System.out.println(p + " - " + pageViews.get(p) + " views");
         }
-        return false;
     }
 
     public static void main(String[] args) {
-        RateLimiter rl = new RateLimiter();
-        System.out.println(rl.check("abc123"));
+        Analytics a = new Analytics();
+        a.processEvent("/news", "user1", "google");
+        a.processEvent("/news", "user2", "facebook");
+        a.dashboard();
     }
 }
