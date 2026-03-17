@@ -1,42 +1,30 @@
-// Problem 4: Plagiarism Detection System
+// Problem 5: Real-Time Analytics Dashboard
 import java.util.*;
 
-class PlagiarismDetector {
-    HashMap<String, Set<String>> index = new HashMap<>();
+class Analytics {
+    HashMap<String, Integer> pageViews = new HashMap<>();
+    HashMap<String, Set<String>> uniqueVisitors = new HashMap<>();
+    HashMap<String, Integer> sourceCount = new HashMap<>();
 
-    public List<String> generateNgrams(String text, int n) {
-        String[] words = text.split(" ");
-        List<String> grams = new ArrayList<>();
+    public void processEvent(String url, String userId, String source) {
+        pageViews.put(url, pageViews.getOrDefault(url, 0) + 1);
 
-        for (int i = 0; i <= words.length - n; i++) {
-            StringBuilder sb = new StringBuilder();
-            for (int j = 0; j < n; j++) sb.append(words[i + j]).append(" ");
-            grams.add(sb.toString().trim());
-        }
-        return grams;
+        uniqueVisitors.computeIfAbsent(url, k -> new HashSet<>()).add(userId);
+
+        sourceCount.put(source, sourceCount.getOrDefault(source, 0) + 1);
     }
 
-    public void addDocument(String docId, String text) {
-        for (String gram : generateNgrams(text, 3)) {
-            index.computeIfAbsent(gram, k -> new HashSet<>()).add(docId);
+    public void dashboard() {
+        System.out.println("Top Pages:");
+        for (String p : pageViews.keySet()) {
+            System.out.println(p + " - " + pageViews.get(p) + " views");
         }
-    }
-
-    public void analyze(String docId, String text) {
-        int matches = 0;
-        List<String> grams = generateNgrams(text, 3);
-
-        for (String g : grams) {
-            if (index.containsKey(g)) matches++;
-        }
-
-        double similarity = matches * 100.0 / grams.size();
-        System.out.println("Similarity: " + similarity + "%");
     }
 
     public static void main(String[] args) {
-        PlagiarismDetector pd = new PlagiarismDetector();
-        pd.addDocument("doc1", "this is a simple essay test");
-        pd.analyze("doc2", "this is a simple essay example");
+        Analytics a = new Analytics();
+        a.processEvent("/news", "user1", "google");
+        a.processEvent("/news", "user2", "facebook");
+        a.dashboard();
     }
 }
