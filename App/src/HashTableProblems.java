@@ -1,30 +1,30 @@
-// Problem 5: Real-Time Analytics Dashboard
+// Problem 7: Autocomplete System
 import java.util.*;
 
-class Analytics {
-    HashMap<String, Integer> pageViews = new HashMap<>();
-    HashMap<String, Set<String>> uniqueVisitors = new HashMap<>();
-    HashMap<String, Integer> sourceCount = new HashMap<>();
+class Autocomplete {
+    HashMap<String, Integer> freq = new HashMap<>();
 
-    public void processEvent(String url, String userId, String source) {
-        pageViews.put(url, pageViews.getOrDefault(url, 0) + 1);
-
-        uniqueVisitors.computeIfAbsent(url, k -> new HashSet<>()).add(userId);
-
-        sourceCount.put(source, sourceCount.getOrDefault(source, 0) + 1);
+    public void addQuery(String q) {
+        freq.put(q, freq.getOrDefault(q, 0) + 1);
     }
 
-    public void dashboard() {
-        System.out.println("Top Pages:");
-        for (String p : pageViews.keySet()) {
-            System.out.println(p + " - " + pageViews.get(p) + " views");
+    public List<String> search(String prefix) {
+        List<String> res = new ArrayList<>();
+
+        for (String q : freq.keySet()) {
+            if (q.startsWith(prefix)) res.add(q);
         }
+
+        res.sort((a, b) -> freq.get(b) - freq.get(a));
+        return res.subList(0, Math.min(10, res.size()));
     }
 
     public static void main(String[] args) {
-        Analytics a = new Analytics();
-        a.processEvent("/news", "user1", "google");
-        a.processEvent("/news", "user2", "facebook");
-        a.dashboard();
+        Autocomplete ac = new Autocomplete();
+        ac.addQuery("java tutorial");
+        ac.addQuery("javascript");
+        ac.addQuery("java download");
+
+        System.out.println(ac.search("jav"));
     }
 }
