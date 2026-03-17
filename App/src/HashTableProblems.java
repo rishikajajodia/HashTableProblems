@@ -1,45 +1,42 @@
-// Problem 3: DNS Cache with TTL
+// Problem 4: Plagiarism Detection System
 import java.util.*;
 
-class DNSEntry {
-    String ip;
-    long expiry;
+class PlagiarismDetector {
+    HashMap<String, Set<String>> index = new HashMap<>();
 
-    DNSEntry(String ip, int ttl) {
-        this.ip = ip;
-        this.expiry = System.currentTimeMillis() + ttl * 1000;
+    public List<String> generateNgrams(String text, int n) {
+        String[] words = text.split(" ");
+        List<String> grams = new ArrayList<>();
+
+        for (int i = 0; i <= words.length - n; i++) {
+            StringBuilder sb = new StringBuilder();
+            for (int j = 0; j < n; j++) sb.append(words[i + j]).append(" ");
+            grams.add(sb.toString().trim());
+        }
+        return grams;
     }
-}
 
-class DNSCache {
-    HashMap<String, DNSEntry> cache = new HashMap<>();
-    int hits = 0;
-    int misses = 0;
+    public void addDocument(String docId, String text) {
+        for (String gram : generateNgrams(text, 3)) {
+            index.computeIfAbsent(gram, k -> new HashSet<>()).add(docId);
+        }
+    }
 
-    public String resolve(String domain) {
-        if (cache.containsKey(domain)) {
-            DNSEntry e = cache.get(domain);
-            if (System.currentTimeMillis() < e.expiry) {
-                hits++;
-                return e.ip;
-            }
+    public void analyze(String docId, String text) {
+        int matches = 0;
+        List<String> grams = generateNgrams(text, 3);
+
+        for (String g : grams) {
+            if (index.containsKey(g)) matches++;
         }
 
-        misses++;
-        String ip = "172.217.14." + new Random().nextInt(255);
-        cache.put(domain, new DNSEntry(ip, 300));
-        return ip;
-    }
-
-    public void stats() {
-        int total = hits + misses;
-        System.out.println("Hit Rate: " + (hits * 100.0 / total) + "%");
+        double similarity = matches * 100.0 / grams.size();
+        System.out.println("Similarity: " + similarity + "%");
     }
 
     public static void main(String[] args) {
-        DNSCache dns = new DNSCache();
-        System.out.println(dns.resolve("google.com"));
-        System.out.println(dns.resolve("google.com"));
-        dns.stats();
+        PlagiarismDetector pd = new PlagiarismDetector();
+        pd.addDocument("doc1", "this is a simple essay test");
+        pd.analyze("doc2", "this is a simple essay example");
     }
 }
