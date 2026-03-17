@@ -1,42 +1,34 @@
-// Problem 4: Plagiarism Detection System
+// Problem 6: Distributed Rate Limiter
 import java.util.*;
 
-class PlagiarismDetector {
-    HashMap<String, Set<String>> index = new HashMap<>();
+class TokenBucket {
+    int tokens;
+    int max;
+    long lastRefill;
 
-    public List<String> generateNgrams(String text, int n) {
-        String[] words = text.split(" ");
-        List<String> grams = new ArrayList<>();
-
-        for (int i = 0; i <= words.length - n; i++) {
-            StringBuilder sb = new StringBuilder();
-            for (int j = 0; j < n; j++) sb.append(words[i + j]).append(" ");
-            grams.add(sb.toString().trim());
-        }
-        return grams;
+    TokenBucket(int max) {
+        this.max = max;
+        this.tokens = max;
+        this.lastRefill = System.currentTimeMillis();
     }
+}
 
-    public void addDocument(String docId, String text) {
-        for (String gram : generateNgrams(text, 3)) {
-            index.computeIfAbsent(gram, k -> new HashSet<>()).add(docId);
+class RateLimiter {
+    HashMap<String, TokenBucket> clients = new HashMap<>();
+
+    public boolean check(String clientId) {
+        clients.putIfAbsent(clientId, new TokenBucket(1000));
+        TokenBucket bucket = clients.get(clientId);
+
+        if (bucket.tokens > 0) {
+            bucket.tokens--;
+            return true;
         }
-    }
-
-    public void analyze(String docId, String text) {
-        int matches = 0;
-        List<String> grams = generateNgrams(text, 3);
-
-        for (String g : grams) {
-            if (index.containsKey(g)) matches++;
-        }
-
-        double similarity = matches * 100.0 / grams.size();
-        System.out.println("Similarity: " + similarity + "%");
+        return false;
     }
 
     public static void main(String[] args) {
-        PlagiarismDetector pd = new PlagiarismDetector();
-        pd.addDocument("doc1", "this is a simple essay test");
-        pd.analyze("doc2", "this is a simple essay example");
+        RateLimiter rl = new RateLimiter();
+        System.out.println(rl.check("abc123"));
     }
 }
