@@ -1,40 +1,41 @@
-// Problem 8: Parking Lot Management (Open Addressing)
+// Problem 9: Two Sum Financial Transactions
 import java.util.*;
 
-class ParkingLot {
-    String[] spots = new String[500];
+class Transaction {
+    int id;
+    int amount;
 
-    int hash(String plate) {
-        return Math.abs(plate.hashCode()) % spots.length;
+    Transaction(int id, int amount) {
+        this.id = id;
+        this.amount = amount;
     }
+}
 
-    public int park(String plate) {
-        int index = hash(plate);
+class TwoSumSystem {
+    public List<int[]> findTwoSum(List<Transaction> list, int target) {
+        HashMap<Integer, Integer> map = new HashMap<>();
+        List<int[]> res = new ArrayList<>();
 
-        for (int i = 0; i < spots.length; i++) {
-            int pos = (index + i) % spots.length;
-            if (spots[pos] == null) {
-                spots[pos] = plate;
-                return pos;
+        for (Transaction t : list) {
+            int complement = target - t.amount;
+
+            if (map.containsKey(complement)) {
+                res.add(new int[]{map.get(complement), t.id});
             }
-        }
-        return -1;
-    }
 
-    public void exit(String plate) {
-        for (int i = 0; i < spots.length; i++) {
-            if (plate.equals(spots[i])) {
-                spots[i] = null;
-                System.out.println("Spot freed: " + i);
-                return;
-            }
+            map.put(t.amount, t.id);
         }
+        return res;
     }
 
     public static void main(String[] args) {
-        ParkingLot pl = new ParkingLot();
-        int spot = pl.park("ABC1234");
-        System.out.println("Parked at " + spot);
-        pl.exit("ABC1234");
+        List<Transaction> list = Arrays.asList(
+                new Transaction(1, 500),
+                new Transaction(2, 300),
+                new Transaction(3, 200)
+        );
+
+        TwoSumSystem ts = new TwoSumSystem();
+        System.out.println(ts.findTwoSum(list, 500));
     }
 }
