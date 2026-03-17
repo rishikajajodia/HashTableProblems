@@ -1,33 +1,45 @@
-// Problem 2: E-commerce Flash Sale Inventory Manager
+// Problem 3: DNS Cache with TTL
 import java.util.*;
 
-class FlashSale {
-    HashMap<String, Integer> inventory = new HashMap<>();
-    Queue<Integer> waitingList = new LinkedList<>();
+class DNSEntry {
+    String ip;
+    long expiry;
 
-    public FlashSale() {
-        inventory.put("IPHONE15_256GB", 100);
+    DNSEntry(String ip, int ttl) {
+        this.ip = ip;
+        this.expiry = System.currentTimeMillis() + ttl * 1000;
     }
+}
 
-    public int checkStock(String productId) {
-        return inventory.getOrDefault(productId, 0);
-    }
+class DNSCache {
+    HashMap<String, DNSEntry> cache = new HashMap<>();
+    int hits = 0;
+    int misses = 0;
 
-    public synchronized String purchaseItem(String productId, int userId) {
-        int stock = inventory.get(productId);
-
-        if (stock > 0) {
-            inventory.put(productId, stock - 1);
-            return "Success, remaining " + (stock - 1);
+    public String resolve(String domain) {
+        if (cache.containsKey(domain)) {
+            DNSEntry e = cache.get(domain);
+            if (System.currentTimeMillis() < e.expiry) {
+                hits++;
+                return e.ip;
+            }
         }
 
-        waitingList.add(userId);
-        return "Added to waiting list position #" + waitingList.size();
+        misses++;
+        String ip = "172.217.14." + new Random().nextInt(255);
+        cache.put(domain, new DNSEntry(ip, 300));
+        return ip;
+    }
+
+    public void stats() {
+        int total = hits + misses;
+        System.out.println("Hit Rate: " + (hits * 100.0 / total) + "%");
     }
 
     public static void main(String[] args) {
-        FlashSale fs = new FlashSale();
-        System.out.println(fs.checkStock("IPHONE15_256GB"));
-        System.out.println(fs.purchaseItem("IPHONE15_256GB", 12345));
+        DNSCache dns = new DNSCache();
+        System.out.println(dns.resolve("google.com"));
+        System.out.println(dns.resolve("google.com"));
+        dns.stats();
     }
 }
