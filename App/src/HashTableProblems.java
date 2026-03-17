@@ -1,41 +1,40 @@
-// Problem 9: Two Sum Financial Transactions
+// Problem 10: Multi-Level Cache System
 import java.util.*;
 
-class Transaction {
-    int id;
-    int amount;
+class MultiLevelCache {
 
-    Transaction(int id, int amount) {
-        this.id = id;
-        this.amount = amount;
+    LinkedHashMap<String, String> L1 = new LinkedHashMap<>(10000, 0.75f, true);
+    HashMap<String, String> L2 = new HashMap<>();
+    HashMap<String, String> DB = new HashMap<>();
+
+    public MultiLevelCache() {
+        DB.put("video_999", "VideoData");
     }
-}
 
-class TwoSumSystem {
-    public List<int[]> findTwoSum(List<Transaction> list, int target) {
-        HashMap<Integer, Integer> map = new HashMap<>();
-        List<int[]> res = new ArrayList<>();
+    public String getVideo(String id) {
 
-        for (Transaction t : list) {
-            int complement = target - t.amount;
-
-            if (map.containsKey(complement)) {
-                res.add(new int[]{map.get(complement), t.id});
-            }
-
-            map.put(t.amount, t.id);
+        if (L1.containsKey(id)) {
+            System.out.println("L1 HIT");
+            return L1.get(id);
         }
-        return res;
+
+        if (L2.containsKey(id)) {
+            System.out.println("L2 HIT");
+            String data = L2.get(id);
+            L1.put(id, data);
+            return data;
+        }
+
+        System.out.println("DB HIT");
+        String data = DB.get(id);
+        if (data != null) L2.put(id, data);
+
+        return data;
     }
 
     public static void main(String[] args) {
-        List<Transaction> list = Arrays.asList(
-                new Transaction(1, 500),
-                new Transaction(2, 300),
-                new Transaction(3, 200)
-        );
-
-        TwoSumSystem ts = new TwoSumSystem();
-        System.out.println(ts.findTwoSum(list, 500));
+        MultiLevelCache cache = new MultiLevelCache();
+        cache.getVideo("video_999");
+        cache.getVideo("video_999");
     }
 }
