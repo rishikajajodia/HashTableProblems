@@ -1,30 +1,40 @@
-// Problem 7: Autocomplete System
+// Problem 8: Parking Lot Management (Open Addressing)
 import java.util.*;
 
-class Autocomplete {
-    HashMap<String, Integer> freq = new HashMap<>();
+class ParkingLot {
+    String[] spots = new String[500];
 
-    public void addQuery(String q) {
-        freq.put(q, freq.getOrDefault(q, 0) + 1);
+    int hash(String plate) {
+        return Math.abs(plate.hashCode()) % spots.length;
     }
 
-    public List<String> search(String prefix) {
-        List<String> res = new ArrayList<>();
+    public int park(String plate) {
+        int index = hash(plate);
 
-        for (String q : freq.keySet()) {
-            if (q.startsWith(prefix)) res.add(q);
+        for (int i = 0; i < spots.length; i++) {
+            int pos = (index + i) % spots.length;
+            if (spots[pos] == null) {
+                spots[pos] = plate;
+                return pos;
+            }
         }
+        return -1;
+    }
 
-        res.sort((a, b) -> freq.get(b) - freq.get(a));
-        return res.subList(0, Math.min(10, res.size()));
+    public void exit(String plate) {
+        for (int i = 0; i < spots.length; i++) {
+            if (plate.equals(spots[i])) {
+                spots[i] = null;
+                System.out.println("Spot freed: " + i);
+                return;
+            }
+        }
     }
 
     public static void main(String[] args) {
-        Autocomplete ac = new Autocomplete();
-        ac.addQuery("java tutorial");
-        ac.addQuery("javascript");
-        ac.addQuery("java download");
-
-        System.out.println(ac.search("jav"));
+        ParkingLot pl = new ParkingLot();
+        int spot = pl.park("ABC1234");
+        System.out.println("Parked at " + spot);
+        pl.exit("ABC1234");
     }
 }
