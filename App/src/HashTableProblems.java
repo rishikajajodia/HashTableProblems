@@ -1,44 +1,33 @@
-// Problem 1: Social Media Username Availability Checker
+// Problem 2: E-commerce Flash Sale Inventory Manager
 import java.util.*;
 
-class UsernameChecker {
-    private HashMap<String, Integer> users = new HashMap<>();
-    private HashMap<String, Integer> attempts = new HashMap<>();
+class FlashSale {
+    HashMap<String, Integer> inventory = new HashMap<>();
+    Queue<Integer> waitingList = new LinkedList<>();
 
-    public boolean checkAvailability(String username) {
-        attempts.put(username, attempts.getOrDefault(username, 0) + 1);
-        return !users.containsKey(username);
+    public FlashSale() {
+        inventory.put("IPHONE15_256GB", 100);
     }
 
-    public void register(String username, int userId) {
-        users.put(username, userId);
+    public int checkStock(String productId) {
+        return inventory.getOrDefault(productId, 0);
     }
 
-    public List<String> suggestAlternatives(String username) {
-        List<String> list = new ArrayList<>();
-        list.add(username + "1");
-        list.add(username + "2");
-        list.add(username.replace("_", "."));
-        return list;
-    }
+    public synchronized String purchaseItem(String productId, int userId) {
+        int stock = inventory.get(productId);
 
-    public String getMostAttempted() {
-        String maxUser = "";
-        int max = 0;
-        for (String u : attempts.keySet()) {
-            if (attempts.get(u) > max) {
-                max = attempts.get(u);
-                maxUser = u;
-            }
+        if (stock > 0) {
+            inventory.put(productId, stock - 1);
+            return "Success, remaining " + (stock - 1);
         }
-        return maxUser;
+
+        waitingList.add(userId);
+        return "Added to waiting list position #" + waitingList.size();
     }
 
     public static void main(String[] args) {
-        UsernameChecker uc = new UsernameChecker();
-        uc.register("john_doe", 1);
-        System.out.println(uc.checkAvailability("john_doe"));
-        System.out.println(uc.checkAvailability("jane_smith"));
-        System.out.println(uc.suggestAlternatives("john_doe"));
+        FlashSale fs = new FlashSale();
+        System.out.println(fs.checkStock("IPHONE15_256GB"));
+        System.out.println(fs.purchaseItem("IPHONE15_256GB", 12345));
     }
 }
